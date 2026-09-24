@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Gold Level</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0b0c;
+    --ink:#f5f3ef;
+    --muted:#8a8a86;
+    --line:#282723;
+    --bronze:#b08d57;
+    --pad-t: env(safe-area-inset-top, 0px);
+    --pad-b: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
+  *{box-sizing:inherit;}
+  html{scroll-padding-top:var(--pad-t);}
+  html,body{height:100%;}
+  html.lenis, html.lenis body{height:auto;}
+  html.lenis-smooth{scroll-behavior:auto;}
+  html.lenis-stopped{overflow:hidden;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    padding-top:var(--pad-t);
+    padding-bottom:var(--pad-b);
+    overflow-x:hidden;
+  }
+  a{color:inherit;}
+
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:28px clamp(20px,5vw,56px) 0;
+  }
+  .brand{font-size:13px; letter-spacing:.14em; font-weight:600;}
+  .links{display:flex; gap:28px; font-size:12px; letter-spacing:.1em; color:var(--muted);}
+  .links a{text-decoration:none; transition:color .4s cubic-bezier(.16,1,.3,1);}
+  .links a:hover{color:var(--ink);}
+  @media (max-width:640px){ .links{display:none;} }
+
+  main{
+    position:relative;
+    min-height:calc(100vh - 90px);
+    display:flex; flex-direction:column; justify-content:center;
+    padding:40px clamp(20px,5vw,56px) 32px;
+    max-width:1400px; margin:0 auto;
+  }
+
+  .eyebrow{
+    font-size:12px; letter-spacing:.14em; color:var(--muted);
+    margin-bottom:14px;
+  }
+
+  .stage{
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    min-height:min(58vw, 460px);
+  }
+  h1{
+    font-family:'Archivo Black', sans-serif;
+    font-weight:400;
+    font-size:clamp(3.2rem, 13vw, 9.5rem);
+    line-height:.86;
+    letter-spacing:-.01em;
+    text-align:center;
+    margin:0;
+    user-select:none;
+    position:relative;
+    z-index:1;
+  }
+  .stage canvas{
+    position:absolute;
+    inset:0;
+    width:100%!important; height:100%!important;
+    z-index:2;
+    cursor:grab;
+    touch-action:none;
+  }
+  .stage canvas:active{cursor:grabbing;}
+
+  .below{
+    margin-top:28px;
+    display:flex; flex-wrap:wrap; gap:24px;
+    align-items:flex-end; justify-content:space-between;
+    border-top:1px solid var(--line);
+    padding-top:24px;
+  }
+  .copy{max-width:34ch; color:var(--muted); font-size:14.5px; line-height:1.55;}
+  .actions{display:flex; gap:12px; flex-wrap:wrap;}
+  .btn{
+    font-family:inherit; font-size:13px; letter-spacing:.04em;
+    padding:13px 22px; border-radius:2px; text-decoration:none;
+    border:1px solid var(--line); cursor:pointer;
+    transition:border-color .45s cubic-bezier(.16,1,.3,1), background .45s cubic-bezier(.16,1,.3,1);
+    background:transparent; color:var(--ink);
+  }
+  .btn.primary{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .btn.primary:hover{background:var(--bronze); border-color:var(--bronze);}
+  .btn:not(.primary):hover{border-color:var(--bronze); color:var(--bronze);}
+
+  footer{
+    text-align:center; padding:26px 20px calc(26px + var(--pad-b));
+    font-size:11px; letter-spacing:.1em; color:var(--muted);
+  }
+
+  .reveal{opacity:0; transform:translateY(16px); animation:rise 1.1s cubic-bezier(.16,1,.3,1) forwards .15s;}
+  @keyframes rise{to{opacity:1; transform:translateY(0);}}
+  @media (prefers-reduced-motion: reduce){
+    .reveal{animation:none; opacity:1; transform:none;}
+  }
+
+  .overlay{
+    position:fixed; inset:0; z-index:50;
+    background:var(--bg);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:calc(76px + var(--pad-t)) 24px calc(40px + var(--pad-b));
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .6s cubic-bezier(.16,1,.3,1), visibility 0s linear .6s;
+  }
+  .overlay.open{
+    opacity:1; visibility:visible; pointer-events:auto;
+    transition:opacity .6s cubic-bezier(.16,1,.3,1), visibility 0s linear 0s;
+  }
+  .overlay-close{
+    position:fixed; top:calc(24px + var(--pad-t)); right:clamp(20px,5vw,56px);
+    background:none; border:none; color:var(--muted); font-size:24px; line-height:1;
+    cursor:pointer; padding:6px; transition:color .3s cubic-bezier(.16,1,.3,1);
+    z-index:51;
+  }
+  .overlay-close:hover{color:var(--ink);}
+  .overlay-form{
+    width:100%; max-width:400px;
+    margin:0 auto;
+  }
+  .overlay-form h2{
+    font-family:'Archivo Black', sans-serif; font-weight:400;
+    font-size:1.9rem; letter-spacing:-.01em; margin:6px 0 26px;
+  }
+  .stagger{
+    opacity:0; transform:translateY(10px);
+    transition:opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1);
+    transition-delay:calc(var(--d, 0) * 110ms);
+  }
+  .overlay.open .stagger{opacity:1; transform:translateY(0);}
+  @media (prefers-reduced-motion: reduce){
+    .stagger{transition:none; opacity:1; transform:none;}
+  }
+  .field{margin-bottom:18px;}
+  .field label{display:block; font-size:11px; letter-spacing:.12em; color:var(--muted); margin-bottom:8px;}
+  .field input, .field textarea{
+    width:100%; background:transparent; border:none; border-bottom:1px solid var(--line);
+    color:var(--ink); font-family:inherit; font-size:15px; padding:8px 0;
+    transition:border-color .4s cubic-bezier(.16,1,.3,1);
+  }
+  .field textarea{resize:none; min-height:46px; line-height:1.5;}
+  .field input:focus, .field textarea:focus{outline:none; border-color:var(--bronze);}
+  .field input::placeholder, .field textarea::placeholder{color:var(--muted); opacity:.5;}
+  .overlay-form .btn.primary{width:100%; text-align:center; margin-top:10px;}
+  .overlay-success{display:none; color:var(--muted); font-size:14.5px; line-height:1.6; text-align:center;}
+  .overlay-success.show{display:block;}
+  .overlay-success.show ~ form{display:none;}
+  .overlay-success .success-rule{
+    width:1px; height:34px; background:var(--bronze); margin:0 auto 22px;
+    opacity:0; transform:scaleY(0); transform-origin:top;
+    transition:opacity .5s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1);
+  }
+  .overlay-success.show .success-rule{opacity:1; transform:scaleY(1); transition-delay:.05s;}
+  .overlay-success .eyebrow{
+    opacity:0; transform:translateY(8px);
+    transition:opacity .5s cubic-bezier(.16,1,.3,1) .2s, transform .5s cubic-bezier(.16,1,.3,1) .2s;
+  }
+  .overlay-success.show .eyebrow{opacity:1; transform:translateY(0);}
+  .overlay-success .success-title{
+    font-family:'Archivo Black', sans-serif; font-weight:400;
+    font-size:clamp(1.9rem, 6vw, 2.6rem); line-height:1.05; letter-spacing:-.01em;
+    color:var(--ink); margin:14px 0 20px;
+    opacity:0; transform:translateY(10px);
+    transition:opacity .55s cubic-bezier(.16,1,.3,1) .3s, transform .55s cubic-bezier(.16,1,.3,1) .3s;
+  }
+  .overlay-success.show .success-title{opacity:1; transform:translateY(0);}
+  .overlay-success .success-lead{
+    max-width:30ch; margin:0 auto; opacity:0; transform:translateY(8px);
+    transition:opacity .5s cubic-bezier(.16,1,.3,1) .4s, transform .5s cubic-bezier(.16,1,.3,1) .4s;
+  }
+  .overlay-success.show .success-lead{opacity:1; transform:translateY(0);}
+  .overlay-success .success-divider{
+    width:44px; height:1px; background:var(--line); margin:34px auto 26px;
+    opacity:0; transition:opacity .5s cubic-bezier(.16,1,.3,1) .5s;
+  }
+  .overlay-success.show .success-divider{opacity:1;}
+  .overlay-success .success-subhead{
+    font-family:'Archivo Black', sans-serif; font-weight:400;
+    font-size:1.05rem; letter-spacing:-.005em; color:var(--ink); margin-bottom:12px;
+    opacity:0; transform:translateY(8px);
+    transition:opacity .5s cubic-bezier(.16,1,.3,1) .55s, transform .5s cubic-bezier(.16,1,.3,1) .55s;
+  }
+  .overlay-success.show .success-subhead{opacity:1; transform:translateY(0);}
+  .overlay-form .btn.success-cta{
+    display:inline-block; width:auto; margin:26px auto 0; padding:13px 30px;
+    opacity:0; transform:translateY(8px);
+    transition:opacity .5s cubic-bezier(.16,1,.3,1) .65s, transform .5s cubic-bezier(.16,1,.3,1) .65s, border-color .45s cubic-bezier(.16,1,.3,1), background .45s cubic-bezier(.16,1,.3,1);
+  }
+  .overlay-success.show .success-cta{opacity:1; transform:translateY(0);}
+  @media (prefers-reduced-motion: reduce){
+    .overlay-success .success-rule, .overlay-success .eyebrow, .overlay-success .success-title,
+    .overlay-success .success-lead, .overlay-success .success-divider,
+    .overlay-success .success-subhead, .overlay-success .success-cta{
+      transition:none; opacity:1; transform:none;
+    }
+  }
+
+  .proposal-overlay{
+    position:fixed; inset:0; z-index:200;
+    background:#000;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px;
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity 1s cubic-bezier(.16,1,.3,1), visibility 0s linear 1s;
+  }
+  .proposal-overlay.open{
+    opacity:1; visibility:visible; pointer-events:auto;
+    transition:opacity 1s cubic-bezier(.16,1,.3,1), visibility 0s linear 0s;
+  }
+  .proposal-overlay canvas{
+    position:absolute; inset:0;
+    width:100%!important; height:100%!important;
+    z-index:1;
+  }
+  .proposal-close{
+    position:fixed; top:calc(24px + var(--pad-t)); right:clamp(20px,5vw,56px);
+    background:none; border:none; color:var(--muted); font-size:24px; line-height:1;
+    cursor:pointer; padding:6px; z-index:202;
+    transition:color .3s cubic-bezier(.16,1,.3,1);
+  }
+  .proposal-close:hover{color:var(--ink);}
+  .proposal-subtitles{
+    position:relative; z-index:2;
+    max-width:760px; text-align:center;
+    font-size:clamp(1rem, 2.4vw, 1.35rem);
+    line-height:1.6; letter-spacing:.01em;
+    color:var(--ink); margin:0;
+    min-height:3.2em;
+    opacity:0;
+    transition:opacity .7s cubic-bezier(.16,1,.3,1);
+  }
+  .proposal-subtitles.show{opacity:1;}
+  .proposal-cta{
+    position:relative; z-index:2;
+    margin-top:36px;
+    opacity:0; transform:translateY(18px);
+    pointer-events:none;
+    transition:opacity 2.2s cubic-bezier(.16,1,.3,1), transform 2.2s cubic-bezier(.16,1,.3,1);
+  }
+  .proposal-cta.show{opacity:1; transform:translateY(0); pointer-events:auto;}
+  @media (prefers-reduced-motion: reduce){
+    .proposal-overlay, .proposal-subtitles, .proposal-cta{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">The Gold Level</div>
+  <div class="links">
+    <a href="#">WORK</a>
+    <a href="#">ABOUT</a>
+    <a href="#">CONTACT</a>
+  </div>
+</nav>
+
+<main>
+  <div class="eyebrow reveal">©ENVYRA - TODOS LOS DERECHOS RESERVADOS.</div>
+
+  <div class="stage">
+    <h1 class="reveal">BUILT TO ADVANCE.</h1>
+    <canvas id="c" aria-hidden="true"></canvas>
+  </div>
+
+  <div class="below reveal">
+    <p class="copy">The Gold Level es el marco de colaboración B2B de ENVYRA para empresas que buscan desarrollar una oportunidad, resolver un desafío concreto o construir nuevas capacidades digitales. No partimos de un catálogo de servicios. Partimos de lo que tu negocio necesita lograr.</p>
+    <div class="actions">
+      <a href="#" class="btn primary" id="applyTrigger">Aplicar</a>
+      <a href="#" class="btn" id="viewProposalTrigger">Ver Proposal v1</a>
+    </div>
+  </div>
+</main>
+
+<div class="overlay" id="applyOverlay">
+  <button class="overlay-close" id="closeApply" aria-label="Close">&times;</button>
+  <div class="overlay-form">
+    <div class="form-intro" id="applyIntro">
+      <div class="eyebrow stagger" style="--d:0">THE GOLD LEVEL</div>
+      <h2 class="stagger" style="--d:1">Present Your Opportunity</h2>
+    </div>
+    <div class="overlay-success" id="applySuccess">
+      <div class="success-rule"></div>
+      <div class="eyebrow">THE GOLD LEVEL</div>
+      <div class="success-title">APPLICATION<br>RECEIVED</div>
+      <p class="success-lead">Your information has been received by ENVYRA.</p>
+      <div class="success-divider"></div>
+      <div class="success-subhead">Explore The Gold Level</div>
+      <p class="success-lead">Learn how our partnerships are structured, how we work and what to expect from the process.</p>
+      <a href="#" class="btn primary success-cta">View Commercial Proposal</a>
+    </div>
+    <form id="applyForm">
+      <input type="hidden" name="_subject" value="New application — The Gold Level">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_template" value="table">
+      <div class="field stagger" style="--d:2">
+        <label for="f-name">Name*</label>
+        <input id="f-name" name="name" type="text" placeholder="Your name" required>
+      </div>
+      <div class="field stagger" style="--d:3">
+        <label for="f-company">Company / Organization*</label>
+        <input id="f-company" name="company" type="text" placeholder="Company name" required>
+      </div>
+      <div class="field stagger" style="--d:4">
+        <label for="f-role">Role</label>
+        <input id="f-role" name="role" type="text" placeholder="Your position">
+      </div>
+      <div class="field stagger" style="--d:5">
+        <label for="f-email">Email*</label>
+        <input id="f-email" name="email" type="email" placeholder="you@company.com" required>
+      </div>
+      <div class="field stagger" style="--d:6">
+        <label for="f-website">Website</label>
+        <input id="f-website" name="website" type="text" placeholder="https://">
+      </div>
+      <div class="field stagger" style="--d:7">
+        <label for="f-explore">What would you like to explore?*</label>
+        <textarea id="f-explore" name="opportunity" placeholder="Tell us briefly about the opportunity, need or project." required></textarea>
+      </div>
+      <div class="field stagger" style="--d:8">
+        <label for="f-goal">What are you looking to achieve?</label>
+        <textarea id="f-goal" name="goal" placeholder="What would you like to change, improve or build?"></textarea>
+      </div>
+      <div class="field stagger" style="--d:9">
+        <label for="f-timeline">Estimated timeline</label>
+        <input id="f-timeline" name="timeline" type="text" placeholder="When would you like to move forward?">
+      </div>
+      <div class="field stagger" style="--d:10">
+        <label for="f-notes">Anything else?</label>
+        <textarea id="f-notes" name="notes" placeholder="Additional context"></textarea>
+      </div>
+      <button type="submit" class="btn primary stagger" style="--d:11">Submit Application</button>
+    </form>
+  </div>
+</div>
+
+<div class="proposal-overlay" id="proposalOverlay">
+  <button class="proposal-close" id="proposalClose" aria-label="Close">&times;</button>
+  <canvas id="proposalCanvas" aria-hidden="true"></canvas>
+  <p class="proposal-subtitles" id="proposalSubtitles"></p>
+  <a href="#" class="btn primary proposal-cta" id="proposalCta">Postularse como socio</a>
+  <audio id="proposalAudio" src="welcome.mp3" preload="auto"></audio>
+</div>
+
+<footer>BUILT TO ADVANCE</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1/dist/lenis.min.js"></script>
+<script>
+(function(){
+  // Inertial scroll — wraps native scroll, keeps anchors/sticky/accessibility working.
+  if (typeof Lenis === 'undefined') return;
+  var lenis = new Lenis({
+    lerp: 0.1,        // lower = smoother/slower catch-up, higher = snappier
+    duration: 1.2,    // eased scroll duration for wheel/anchor jumps
+    smoothWheel: true
+  });
+  window.__lenis = lenis;
+  function raf(time){
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+})();
+</script>
+<script>
+(function(){
+  // ---- Reusable star scene: sets up renderer/lights and loads scene.gltf into any canvas ----
+  function createStarScene(canvas, opts){
+    opts = opts || {};
+    var renderer = new THREE.WebGLRenderer({canvas: canvas, antialias:true, alpha:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    if(opts.cinematic){
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = opts.exposure != null ? opts.exposure : 1.15;
+      if(THREE.sRGBEncoding != null) renderer.outputEncoding = THREE.sRGBEncoding;
+    }
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    camera.position.set(0, 0, 6);
+
+    scene.add(new THREE.AmbientLight(0x404040, opts.ambientIntensity != null ? opts.ambientIntensity : 0.6));
+    var key = new THREE.DirectionalLight(0xffffff, opts.keyIntensity != null ? opts.keyIntensity : 2.4);
+    key.position.set(3, 4, 5);
+    scene.add(key);
+    var rim = new THREE.DirectionalLight(0xb08d57, opts.rimIntensity != null ? opts.rimIntensity : 1.6);
+    rim.position.set(-4, 1.5, -3);
+    scene.add(rim);
+
+    if(opts.extraHighlights){
+      // Luz filosa desde arriba-izquierda para un brillo especular más duro sobre el metal.
+      var highlight = new THREE.DirectionalLight(0xffffff, opts.highlightIntensity != null ? opts.highlightIntensity : 3.5);
+      highlight.position.set(-2, 3.5, 4);
+      scene.add(highlight);
+
+      // Toque cálido desde abajo para separar la silueta del negro absoluto.
+      var underGlow = new THREE.PointLight(0xb08d57, opts.underGlowIntensity != null ? opts.underGlowIntensity : 2.2, 14);
+      underGlow.position.set(0, -1.8, 3);
+      scene.add(underGlow);
+    }
+
+    var api = { mesh:null, scene:scene, camera:camera, renderer:renderer };
+
+    // Put scene.gltf (and its .bin / textures, if separate) in the SAME folder as this HTML file.
+    var loader = new THREE.GLTFLoader();
+    loader.load(
+      'scene.gltf',
+      function(gltf){
+        var model = gltf.scene;
+
+        // Metal más duro y menos difuso, para que agarre brillos definidos contra el negro.
+        if(opts.metalness != null || opts.roughness != null){
+          model.traverse(function(node){
+            if(node.isMesh && node.material){
+              var mats = Array.isArray(node.material) ? node.material : [node.material];
+              mats.forEach(function(mat){
+                if(opts.metalness != null && 'metalness' in mat) mat.metalness = opts.metalness;
+                if(opts.roughness != null && 'roughness' in mat) mat.roughness = opts.roughness;
+                mat.needsUpdate = true;
+              });
+            }
+          });
+        }
+
+        // Center the model and scale it to a consistent size on screen.
+        var box = new THREE.Box3().setFromObject(model);
+        var size = box.getSize(new THREE.Vector3());
+        var center = box.getCenter(new THREE.Vector3());
+        model.position.sub(center);
+        var maxDim = Math.max(size.x, size.y, size.z) || 1;
+        var scale = 2.4 / maxDim;
+        model.scale.setScalar(scale);
+        // Nudge it down so it sits lower in the frame instead of dead-center.
+        model.position.y -= (size.y * scale) * (opts.yOffset != null ? opts.yOffset : 0.35);
+
+        scene.add(model);
+        api.mesh = model;
+      },
+      undefined,
+      function(err){
+        console.error('Could not load scene.gltf — check the path and filename.', err);
+      }
+    );
+
+    function resize(){
+      var wrap = canvas.parentElement;
+      var w = wrap.clientWidth, h = wrap.clientHeight;
+      if(!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    api.resize = resize;
+    return api;
+  }
+
+  // ---- Hero star: interactive, draggable, sits behind the H1 ----
+  var heroCanvas = document.getElementById('c');
+  var hero = createStarScene(heroCanvas, { yOffset:0.35 });
+
+  var targetX = 0, targetY = 0; // raw pointer position (passive tilt)
+  var curX = 0, curY = 0;       // eased, lagging position actually applied
+  window.addEventListener('pointermove', function(e){
+    targetX = (e.clientX / window.innerWidth - 0.5);
+    targetY = (e.clientY / window.innerHeight - 0.5);
+  });
+
+  // Click/touch-and-drag rotation, with momentum that decays after release.
+  var isDragging = false;
+  var lastPX = 0, lastPY = 0;
+  var rotY = 0, rotX = 0;   // accumulated drag rotation
+  var velY = 0, velX = 0;   // current spin momentum
+  var settleSpin = 0.0009;  // gentle ambient spin once momentum settles
+
+  function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+  heroCanvas.addEventListener('pointerdown', function(e){
+    isDragging = true;
+    lastPX = e.clientX; lastPY = e.clientY;
+    velY = 0; velX = 0;
+    heroCanvas.setPointerCapture(e.pointerId);
+  });
+  heroCanvas.addEventListener('pointermove', function(e){
+    if(!isDragging) return;
+    var dx = e.clientX - lastPX;
+    var dy = e.clientY - lastPY;
+    lastPX = e.clientX; lastPY = e.clientY;
+    velY = dx * 0.006;
+    velX = dy * 0.006;
+    rotY += velY;
+    rotX = clamp(rotX + velX, -0.6, 0.6);
+  });
+  function endDrag(){ isDragging = false; }
+  heroCanvas.addEventListener('pointerup', endDrag);
+  heroCanvas.addEventListener('pointercancel', endDrag);
+  heroCanvas.addEventListener('pointerleave', function(e){ if(e.buttons === 0) endDrag(); });
+
+  function lerp(a, b, n){ return a + (b - a) * n; }
+
+  function animateHero(){
+    curX = lerp(curX, targetX, 0.06);
+    curY = lerp(curY, targetY, 0.06);
+
+    if(!isDragging){
+      // Coast on momentum from the last drag, decaying each frame...
+      rotY += velY;
+      rotX = clamp(rotX + velX, -0.6, 0.6);
+      velY *= 0.94;
+      velX *= 0.94;
+      if(Math.abs(velY) < 0.0001) velY = 0;
+      if(Math.abs(velX) < 0.0001) velX = 0;
+      // ...then once it's settled, drift back into a slow ambient spin.
+      if(velY === 0 && velX === 0) rotY += settleSpin;
+    }
+
+    if(hero.mesh){
+      hero.mesh.rotation.y = rotY + curX * 0.7;
+      hero.mesh.rotation.x = rotX + curY * 0.45;
+    }
+    hero.renderer.render(hero.scene, hero.camera);
+    requestAnimationFrame(animateHero);
+  }
+  requestAnimationFrame(animateHero);
+
+  // ---- Proposal star: ambient auto-rotate, only rendered while the black overlay is open ----
+  var proposal = createStarScene(document.getElementById('proposalCanvas'), {
+    yOffset: 0.32,
+    ambientIntensity: 0.45,
+    keyIntensity: 3.0,
+    rimIntensity: 1.6,
+    metalness: 0.55,
+    roughness: 0.4
+  });
+  var proposalRotY = 0;
+  var proposalActive = false;
+  window.__proposalStar = {
+    resize: proposal.resize,
+    setActive: function(v){ proposalActive = v; }
+  };
+  function animateProposal(){
+    if(proposalActive){
+      proposalRotY += 0.0028;
+      if(proposal.mesh) proposal.mesh.rotation.y = proposalRotY;
+      proposal.renderer.render(proposal.scene, proposal.camera);
+    }
+    requestAnimationFrame(animateProposal);
+  }
+  requestAnimationFrame(animateProposal);
+})();
+
+(function(){
+  var trigger = document.getElementById('applyTrigger');
+  var overlay = document.getElementById('applyOverlay');
+  var closeBtn = document.getElementById('closeApply');
+  var intro = document.getElementById('applyIntro');
+  var form = document.getElementById('applyForm');
+  var success = document.getElementById('applySuccess');
+
+  function open(e){
+    if(e) e.preventDefault();
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if(window.__lenis) window.__lenis.stop();
+  }
+  function close(){
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    if(window.__lenis) window.__lenis.start();
+    // Reset back to the form for the next time it's opened.
+    success.classList.remove('show');
+    intro.style.display = '';
+    form.style.display = '';
+  }
+
+  window.__openApply = open; // reused by the "Postularse como socio" CTA at the end of the proposal sequence
+
+  trigger.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) close(); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && overlay.classList.contains('open')) close();
+  });
+
+  var FORM_ENDPOINT = 'https://formsubmit.co/ajax/samunorona35@gmail.com';
+  var submitBtn = form.querySelector('button[type="submit"]');
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    submitBtn.disabled = true;
+    var originalLabel = submitBtn.textContent;
+    submitBtn.textContent = 'Sending...';
+
+    var data = new FormData(form);
+
+    fetch(FORM_ENDPOINT, {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(function(res){
+        if(!res.ok) throw new Error('Request failed');
+        intro.style.display = 'none';
+        form.style.display = 'none';
+        success.classList.add('show');
+        overlay.scrollTop = 0;
+      })
+      .catch(function(err){
+        console.error('FormSubmit error:', err);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalLabel;
+        alert('We could not submit your application. Please try again in a moment.');
+      });
+  });
+})();
+</script>
+<script>
+(function(){
+  var trigger = document.getElementById('viewProposalTrigger');
+  var overlay = document.getElementById('proposalOverlay');
+  var closeBtn = document.getElementById('proposalClose');
+  var audio = document.getElementById('proposalAudio');
+  var subtitleEl = document.getElementById('proposalSubtitles');
+  var cta = document.getElementById('proposalCta');
+
+  // Tiempos estimados a ~150 palabras/min — ajustalos para que calcen exacto con welcome.mp3
+  var subtitles = [
+    { time: 5,    text: 'Bienvenido a The Gold Level, la iniciativa comercial de ENVYRA.' },
+    { time: 10,    text: 'The Gold Level conecta a ENVYRA con empresas y organizaciones que buscan desarrollar nuevas oportunidades mediante tecnología, diseño y soluciones digitales.' },
+    { time: 20,   text: 'No trabajamos con un catálogo cerrado de servicios.' },
+    { time: 24, text: 'Cada partnership comienza con una oportunidad concreta y se construye alrededor de las necesidades y el contexto de cada organización.' },
+    { time: 32,   text: 'La oportunidad comienza aquí. Si buscás impulsar tu empresa con tecnología, completá el formulario.' },
+    { time: 40,   text: 'Tu solicitud será revisada, y nos pondremos en contacto contigo para conocer la oportunidad.' },
+    { time: 48,   text: 'Saludos desde ENVYRA.' }
+  ];
+
+  var currentIndex = -1;
+  var ctaShown = false;
+  var LAST_SUBTITLE_HOLD = 4; // segundos que queda el último subtítulo en pantalla antes de que aparezca el botón
+  var subtitlesEndTime = subtitles[subtitles.length - 1].time + LAST_SUBTITLE_HOLD;
+
+  function resetSequence(){
+    currentIndex = -1;
+    ctaShown = false;
+    subtitleEl.textContent = '';
+    subtitleEl.classList.remove('show');
+    cta.classList.remove('show');
+  }
+
+  function showCta(){
+    if(ctaShown) return;
+    ctaShown = true;
+    subtitleEl.classList.remove('show');
+    cta.classList.add('show');
+  }
+
+  function onTimeUpdate(){
+    var t = audio.currentTime;
+
+    if(!ctaShown && t >= subtitlesEndTime){
+      showCta();
+      return;
+    }
+
+    var next = currentIndex;
+    for(var i = 0; i < subtitles.length; i++){
+      if(t >= subtitles[i].time) next = i;
+    }
+    if(next !== currentIndex){
+      currentIndex = next;
+      subtitleEl.classList.remove('show');
+      setTimeout(function(){
+        subtitleEl.textContent = subtitles[currentIndex].text;
+        subtitleEl.classList.add('show');
+      }, 200);
+    }
+  }
+
+  function onEnded(){
+    // Fallback: si el audio termina antes de que se cumpla el tiempo de espera de arriba, mostramos igual el botón.
+    showCta();
+  }
+
+  function openProposal(e){
+    if(e) e.preventDefault();
+    resetSequence();
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if(window.__lenis) window.__lenis.stop();
+    if(window.__proposalStar){
+      window.__proposalStar.setActive(true);
+      window.__proposalStar.resize();
+    }
+    audio.currentTime = 0;
+    var playPromise = audio.play();
+    if(playPromise && playPromise.catch){
+      playPromise.catch(function(err){
+        console.error('No se pudo reproducir welcome.mp3 automáticamente.', err);
+      });
+    }
+  }
+
+  function closeProposal(){
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    if(window.__lenis) window.__lenis.start();
+    if(window.__proposalStar) window.__proposalStar.setActive(false);
+    audio.pause();
+    audio.currentTime = 0;
+  }
+
+  audio.addEventListener('timeupdate', onTimeUpdate);
+  audio.addEventListener('ended', onEnded);
+
+  trigger.addEventListener('click', openProposal);
+  closeBtn.addEventListener('click', closeProposal);
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) closeProposal(); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && overlay.classList.contains('open')) closeProposal();
+  });
+
+  cta.addEventListener('click', function(e){
+    e.preventDefault();
+    closeProposal();
+    if(window.__openApply) window.__openApply();
+  });
+})();
+</script>
+</body>
+</html>
